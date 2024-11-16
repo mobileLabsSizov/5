@@ -3,19 +3,11 @@ package com.example.lab5;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.PopupWindow;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -51,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.view_button).setOnClickListener((l) -> {
-            EditText t =  findViewById(R.id.file_id_input);
+            EditText t = findViewById(R.id.file_id_input);
             File dir = this.getExternalFilesDir("/Downloads");
             try {
                 File file = new File(dir, t.getText().toString());
@@ -61,20 +53,19 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 Uri path = FileProvider.getUriForFile(this,
-                    this.getApplicationContext().getPackageName() + ".provider",
-                    new File(dir, t.getText().toString()));
+                        this.getApplicationContext().getPackageName() + ".provider",
+                        new File(dir, t.getText().toString()));
 
-            Intent pdfOpenintent = new Intent(Intent.ACTION_VIEW);
-            pdfOpenintent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            pdfOpenintent.setDataAndType(path, "application/pdf");
-            startActivity(pdfOpenintent);
+                Intent pdfOpenintent = new Intent(Intent.ACTION_VIEW);
+                pdfOpenintent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                pdfOpenintent.setDataAndType(path, "application/pdf");
+                startActivity(pdfOpenintent);
             } catch (Exception e) {
                 Toast.makeText(this, "Файл не найден", Toast.LENGTH_SHORT).show();
             }
         });
-
         findViewById(R.id.delete_button).setOnClickListener((l) -> {
-            EditText t =  findViewById(R.id.file_id_input);
+            EditText t = findViewById(R.id.file_id_input);
             File file = new File(this.getExternalFilesDir("/Downloads"), t.getText().toString());
 
             if (file.isFile() && file.delete()) {
@@ -83,13 +74,13 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Файл не найден", Toast.LENGTH_SHORT).show();
             }
         });
+
+        showPopupWindow();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-
 
         /*
         SharedPreferences prefs = getSharedPreferences("key", Context.MODE_PRIVATE);
@@ -128,5 +119,25 @@ public class MainActivity extends AppCompatActivity {
          */
     }
 
+    private void showPopupWindow() {
+        SharedPreferences prefs = getSharedPreferences("key", Context.MODE_PRIVATE);
+//        prefs.edit().putBoolean("popup", true).apply(); // можно использовать для того, чтобы обратно в префы установить true (для отладки и дебага)
 
+        if (prefs.getBoolean("popup", true)) {
+            View layout = getLayoutInflater().inflate(R.layout.popup, findViewById(R.id.main));
+            layout.findViewById(R.id.okButton).setOnClickListener(v -> {
+                        // обрабатываем кнопку "ОК" на поп'апе
+                        CheckBox dontShowAgain = layout.findViewById(R.id.dontShowAgain);
+
+                        // Сохраняем значение чекбокса в SharedPreferences
+                        SharedPreferences.Editor editor = getSharedPreferences("key", Context.MODE_PRIVATE).edit();
+                        editor.putBoolean("popup", !dontShowAgain.isChecked());
+                        editor.apply();
+
+                        // Убераем popup с экрана
+                        findViewById(R.id.popup).setVisibility(View.GONE);
+                    }
+            );
+        }
+    }
 }
